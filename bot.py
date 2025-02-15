@@ -54,28 +54,27 @@ async def start(update: Update, context: CallbackContext):
     await update.message.reply_text("👋 ¡Hola! Estoy activo y moderando mensajes en este grupo.")
 
 # Configura el bot y lo mantiene ejecutándose
-def main():
+async def main():
     """Configura el bot y lo mantiene ejecutándose."""
     # Crea la aplicación del bot con el token
-    application = Application.builder().token(TOKEN).build()
+    app = Application.builder().token(TOKEN).build()
 
     # Comandos del bot
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("getid", get_topic_id))
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("getid", get_topic_id))
 
     # Manejo de mensajes para filtrar palabras prohibidas
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, delete_prohibited_message))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, delete_prohibited_message))
 
     print("✅ Bot iniciado correctamente.")
-    application.run_polling()
+    await app.run_polling()
 
-# Ejecutar el bot en el entorno adecuado
+# Ejecutar el bot
 if __name__ == "__main__":
-    # Llamar a la función main sin asyncio.run()
     main()
 
     # Obtener el puerto desde las variables de entorno, con un valor predeterminado de 5000
-    port = int(os.environ.get("PORT", 10000))  # Asegúrate de usar el puerto 10000 para Render
+    port = int(os.environ.get("PORT", 5000))
 
     # Configurar Flask para que escuche en el puerto correcto
-    app.run(host="0.0.0.0", port=port)  # Flask escucha en todas las interfaces de redes
+    app.run(host="0.0.0.0", port=port)
