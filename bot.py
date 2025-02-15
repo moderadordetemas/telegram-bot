@@ -18,7 +18,7 @@ TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 PROHIBITED_WORDS = ["palabra1", "palabra2", "insulto", "spam"]
 
 # ID de los temas donde se aplicará el filtro (reemplaza con los reales)
-TOPIC_IDS = [2,5]  # IDs de los temas específicos
+TOPIC_IDS = [5]  # IDs de los temas específicos
 
 # Función que eliminará el mensaje si contiene palabras prohibidas
 async def delete_prohibited_message(update: Update, context: CallbackContext):
@@ -69,17 +69,16 @@ async def main():
 
     print("✅ Bot iniciado correctamente.")
     
-    # Ejecutar el bot en un hilo separado
+    # Ejecutar el bot en un bucle de eventos
     await application.run_polling()
 
-# Ejecutar Flask y el bot en paralelo
 def run():
     loop = asyncio.get_event_loop()
-    
+
     # Ejecutar el bot en segundo plano
-    asyncio.create_task(main())
+    task = loop.create_task(main())
     
-    # Ejecutar Flask en el hilo principal
+    # Ejecutar Flask en el bucle de eventos actual
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
 
