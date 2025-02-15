@@ -18,7 +18,7 @@ TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 PROHIBITED_WORDS = ["palabra1", "palabra2", "insulto", "spam"]
 
 # ID de los temas donde se aplicará el filtro (reemplaza con los reales)
-TOPIC_IDS = [5]  # IDs de los temas específicos
+TOPIC_IDS = [2, 5]  # IDs de los temas específicos
 
 # Función que eliminará el mensaje si contiene palabras prohibidas
 async def delete_prohibited_message(update: Update, context: CallbackContext):
@@ -61,26 +61,23 @@ async def main():
     application = Application.builder().token(TOKEN).build()
 
     # Comandos del bot
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("getid", get_topic_id))
+    application.add_handler(CommandHandler("start", start))  # Comando /start
+    application.add_handler(CommandHandler("getid", get_topic_id))  # Comando /getid
 
     # Manejo de mensajes para filtrar palabras prohibidas
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, delete_prohibited_message))
 
     print("✅ Bot iniciado correctamente.")
-    
-    # Ejecutar el bot en un bucle de eventos
     await application.run_polling()
 
-def run():
-    loop = asyncio.get_event_loop()
+# Ejecutar el bot
+if __name__ == "__main__":
+    # Ejecuta el bot en un hilo separado si ya está ejecutándose un evento asincrónico (como Flask)
+    def run():
+        loop = asyncio.get_event_loop()
+        loop.create_task(main())
+        loop.run_forever()
 
-    # Ejecutar el bot en segundo plano
-    task = loop.create_task(main())
-    
-    # Ejecutar Flask en el bucle de eventos actual
+    # Inicia Flask en el puerto 5000 (o el que tengas configurado)
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-if __name__ == "__main__":
-    run()
