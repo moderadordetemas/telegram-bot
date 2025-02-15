@@ -8,7 +8,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Configura la aplicación de Telegram
 async def main():
     # Obtén tu token de Bot de Telegram
-    application = Application.builder().token("TU_TOKEN_DE_BOT").build()
+    application = Application.builder().token("7859944290:AAGq_vFC3JpdINiRZjnRKlYsx2T9n9Wk-uQ").build()
 
     # Registra el manejador para el comando /start
     start_handler = CommandHandler('start', start)
