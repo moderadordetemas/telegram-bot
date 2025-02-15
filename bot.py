@@ -1,5 +1,5 @@
 import os
-import asyncio
+import logging
 from flask import Flask
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
@@ -10,6 +10,11 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     return "Bot is running"
+
+# Configurar el log de Telegram
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Cargar el token desde las variables de entorno
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -61,23 +66,23 @@ async def main():
     application = Application.builder().token(TOKEN).build()
 
     # Comandos del bot
-    application.add_handler(CommandHandler("start", start))  # Comando /start
-    application.add_handler(CommandHandler("getid", get_topic_id))  # Comando /getid
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("getid", get_topic_id))
 
     # Manejo de mensajes para filtrar palabras prohibidas
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, delete_prohibited_message))
 
+    # Inicia el polling para que el bot esté escuchando y responda
     print("✅ Bot iniciado correctamente.")
     await application.run_polling()
 
 # Ejecutar el bot
 if __name__ == "__main__":
-    # Ejecuta el bot en un hilo separado si ya está ejecutándose un evento asincrónico (como Flask)
-    def run():
-        loop = asyncio.get_event_loop()
-        loop.create_task(main())
-        loop.run_forever()
+    import asyncio
+    asyncio.run(main())
 
-    # Inicia Flask en el puerto 5000 (o el que tengas configurado)
+    # Obtener el puerto desde las variables de entorno, con un valor predeterminado de 5000
     port = int(os.environ.get("PORT", 5000))
+
+    # Configurar Flask para que escuche en el puerto correcto
     app.run(host="0.0.0.0", port=port)
