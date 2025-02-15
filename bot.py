@@ -24,9 +24,10 @@ async def main():
     # Inicia el bot
     await application.run_polling()
 
-# Función para ejecutar el bot en un hilo separado
+# Función para ejecutar el bot
 def run_bot():
-    asyncio.run(main())
+    # Crea la tarea asíncrona sin bloquear el hilo
+    asyncio.create_task(main())
 
 # Ruta simple para que Flask mantenga la aplicación web viva
 @app.route('/')
