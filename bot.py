@@ -3,6 +3,8 @@ import logging
 from flask import Flask
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
+from gevent.pywsgi import WSGIServer
+import asyncio
 
 # Configurar Flask para mantener el bot en ejecución
 app = Flask(__name__)
@@ -76,13 +78,14 @@ async def main():
     print("✅ Bot iniciado correctamente.")
     await application.run_polling()
 
-# Ejecutar el bot
-if __name__ == "__main__":
-    import asyncio
+# Ejecutar el bot y Flask usando gevent para integrarlos correctamente
+def run():
+    # Ejecutar Flask en un servidor de gevent
+    http_server = WSGIServer(('0.0.0.0', int(os.environ.get("PORT", 5000))), app)
+    http_server.start()
+
+    # Ejecutar el bot
     asyncio.run(main())
 
-    # Obtener el puerto desde las variables de entorno, con un valor predeterminado de 5000
-    port = int(os.environ.get("PORT", 5000))
-
-    # Configurar Flask para que escuche en el puerto correcto
-    app.run(host="0.0.0.0", port=port)
+if __name__ == "__main__":
+    run()
