@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
+import asyncio  # Importar asyncio
 
 # Configurar Flask para mantener el bot en ejecución
 app = Flask(__name__)
@@ -69,9 +70,10 @@ async def main():
     print("✅ Bot iniciado correctamente.")
     await app.run_polling()
 
-# Ejecutar el bot
+# Ejecutar el bot de manera asíncrona
 if __name__ == "__main__":
-    main()
+    # Llamar a la función main de forma asíncrona
+    asyncio.run(main())
 
     # Obtener el puerto desde las variables de entorno, con un valor predeterminado de 5000
     port = int(os.environ.get("PORT", 5000))
