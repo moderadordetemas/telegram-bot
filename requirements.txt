@@ -1,3 +1,4 @@
+gevent
+telegram
 flask
-python-telegram-bot
 gunicorn
