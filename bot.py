@@ -1,4 +1,5 @@
 import os
+import asyncio
 from flask import Flask
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
@@ -17,14 +18,16 @@ TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 PROHIBITED_WORDS = ["palabra1", "palabra2", "insulto", "spam"]
 
 # ID de los temas donde se aplicará el filtro (reemplaza con los reales)
-TOPIC_IDS = [2, 5]  # IDs de los temas específicos
+TOPIC_IDS = [2,5]  # IDs de los temas específicos
 
 # Función que eliminará el mensaje si contiene palabras prohibidas
 async def delete_prohibited_message(update: Update, context: CallbackContext):
     """Elimina mensajes con palabras prohibidas y advierte al usuario."""
     message = update.message
     chat_id = message.chat_id
-    if message.text:
+    topic_id = message.message_thread_id  # Obtiene el ID del tema en el grupo
+
+    if topic_id in TOPIC_IDS:  # Solo actúa en temas específicos
         for word in PROHIBITED_WORDS:
             if word.lower() in message.text.lower():
                 try:
@@ -33,7 +36,7 @@ async def delete_prohibited_message(update: Update, context: CallbackContext):
                     
                     # Enviar advertencia al usuario
                     warning_text = f"⚠️ @{message.from_user.username}, tu mensaje fue eliminado por contener palabras no permitidas."
-                    await context.bot.send_message(chat_id=chat_id, text=warning_text)
+                    await context.bot.send_message(chat_id=chat_id, text=warning_text, message_thread_id=topic_id)
                 except Exception as e:
                     print(f"Error al eliminar mensaje: {e}")
                 break  # Salir del bucle si encuentra una palabra prohibida
@@ -43,14 +46,8 @@ async def get_topic_id(update: Update, context: CallbackContext):
     """Responde con el ID del tema cuando alguien escribe /getid en un tema."""
     topic_id = update.message.message_thread_id
     chat_id = update.message.chat_id
-
-    # Depura el contenido para ver si el message_thread_id es None
-    print(f"Chat ID: {chat_id}, Topic ID: {topic_id}")
     
-    if topic_id is None:
-        await update.message.reply_text("⚠️ Este mensaje no tiene un ID de tema.")
-    else:
-        await update.message.reply_text(f"📌 Chat ID: {chat_id}\n🆔 Topic ID: {topic_id}")
+    await update.message.reply_text(f"📌 Chat ID: {chat_id}\n🆔 Topic ID: {topic_id}")
 
 # Función de inicio, muestra un mensaje de bienvenida
 async def start(update: Update, context: CallbackContext):
@@ -71,15 +68,20 @@ async def main():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, delete_prohibited_message))
 
     print("✅ Bot iniciado correctamente.")
+    
+    # Ejecutar el bot en un hilo separado
     await application.run_polling()
 
-# Ejecutar el bot
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
-
-    # Obtener el puerto desde las variables de entorno, con un valor predeterminado de 5000
+# Ejecutar Flask y el bot en paralelo
+def run():
+    loop = asyncio.get_event_loop()
+    
+    # Ejecutar el bot en segundo plano
+    asyncio.create_task(main())
+    
+    # Ejecutar Flask en el hilo principal
     port = int(os.environ.get("PORT", 5000))
-
-    # Configurar Flask para que escuche en el puerto correcto
     app.run(host="0.0.0.0", port=port)
+
+if __name__ == "__main__":
+    run()
