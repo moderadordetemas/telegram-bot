@@ -1,5 +1,7 @@
 import os
 from flask import Flask
+from telegram import Update, Bot
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 app = Flask(__name__)
 
