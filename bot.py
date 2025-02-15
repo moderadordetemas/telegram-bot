@@ -18,5 +18,8 @@ async def main():
     await application.run_polling()
 
 if __name__ == '__main__':
+    # Solo llama a la función main sin asyncio.run()
     import asyncio
-    asyncio.run(main())
+    loop = asyncio.get_event_loop()
+    loop.create_task(main())  # Agrega el task al event loop existente
+    loop.run_forever()  # Ejecuta el loop indefinidamente
