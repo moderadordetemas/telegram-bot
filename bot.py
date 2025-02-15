@@ -78,4 +78,4 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))  # Asegúrate de usar el puerto 10000 para Render
 
     # Configurar Flask para que escuche en el puerto correcto
-    app.run(host="0.0.0.0", port=port)  # Flask escucha en todas las interfaces de red
+    app.run(host="0.0.0.0", port=port)  # Flask escucha en todas las interfaces de redes
