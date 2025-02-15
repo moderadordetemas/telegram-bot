@@ -1,11 +1,12 @@
 import os
-from telegram import Bot
+from flask import Flask
 
-# Obtener el token desde la variable de entorno
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+app = Flask(__name__)
 
-# Imprimir el token para verificar que se está leyendo correctamente
-# print(f"Token obtenido: {TOKEN}")
+@app.route('/')
+def home():
+    return "Bot is running"
 
-# Crear instancia del bot
-bot = Bot(token=TOKEN)
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
