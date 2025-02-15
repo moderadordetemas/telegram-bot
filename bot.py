@@ -1,5 +1,12 @@
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
+from flask import Flask
+import logging
+import asyncio
+import threading
+
+# Configura Flask
+app = Flask(__name__)
 
 # Esta es la función para responder al comando /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -17,9 +24,22 @@ async def main():
     # Inicia el bot
     await application.run_polling()
 
+# Función para ejecutar el bot en un hilo separado
+def run_bot():
+    asyncio.run(main())
+
+# Ruta simple para que Flask mantenga la aplicación web viva
+@app.route('/')
+def index():
+    return "El bot está corriendo."
+
+# Inicia Flask en un hilo separado
+def run_flask():
+    app.run(host="0.0.0.0", port=10000)
+
 if __name__ == '__main__':
-    # Solo llama a la función main sin asyncio.run()
-    import asyncio
-    loop = asyncio.get_event_loop()
-    loop.create_task(main())  # Agrega el task al event loop existente
-    loop.run_forever()  # Ejecuta el loop indefinidamente
+    # Crea un hilo para ejecutar Flask
+    threading.Thread(target=run_flask).start()
+
+    # Ejecuta el bot en el hilo principal
+    run_bot()
