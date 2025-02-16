@@ -26,7 +26,7 @@ async def index():
     return 'Servidor en ejecución'
 
 # Función principal para iniciar el bot
-async def main():
+async def start_bot():
     application = Application.builder().token(TOKEN).build()
 
     # Agregar comando /start
@@ -38,14 +38,12 @@ async def main():
 
 # Crear una función para iniciar tanto el servidor Quart como el bot
 async def run():
-    # Iniciar el bot
-    bot_task = asyncio.create_task(main())
-    
-    # Iniciar el servidor Quart
-    await app.run_task(host="0.0.0.0", port=3000)
+    # Crear las tareas para ejecutar el bot y el servidor Quart en paralelo
+    bot_task = asyncio.create_task(start_bot())
+    web_task = asyncio.create_task(app.run_task(host="0.0.0.0", port=3000))
 
-    # Esperar a que el bot termine su ejecución (aunque no lo hará)
-    await bot_task
+    # Esperar a que ambas tareas se completen (aunque no lo harán en este caso)
+    await asyncio.gather(bot_task, web_task)
 
 # Iniciar todo
 if __name__ == '__main__':
