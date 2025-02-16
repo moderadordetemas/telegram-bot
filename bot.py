@@ -5,7 +5,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
 from quart import Quart
 
-# Aplica nest_asyncio para permitir que se use asyncio.run() en un entorno con event loop activo.
+# Aplica nest_asyncio para permitir que se "aniden" llamadas al event loop
 nest_asyncio.apply()
 
 # Configuración de logging
@@ -15,7 +15,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Configura la aplicación Quart (similar a Flask, pero asíncrona)
+# Configura la app de Quart (similar a Flask, pero asíncrona)
 app = Quart(__name__)
 
 @app.route('/')
@@ -26,20 +26,30 @@ async def index():
 async def start(update: Update, context: CallbackContext):
     await update.message.reply_text("¡Hola! Soy tu bot de prueba.")
 
-# Función principal del bot
-async def main():
+# Función que configura y ejecuta el bot de Telegram
+async def main_bot():
     application = Application.builder().token("7859944290:AAGq_vFC3JpdINiRZjnRKlYsx2T9n9Wk-uQ").build()
     application.add_handler(CommandHandler("start", start))
     logger.info("✅ Bot iniciado correctamente.")
     # Ejecuta el polling sin cerrar el event loop (close_loop=False)
     await application.run_polling(close_loop=False)
 
-# Ejecuta el bot y el servidor web de Quart en paralelo
+# Función que ejecuta en paralelo el bot y el servidor web de Quart
 async def run_all():
     await asyncio.gather(
-        main(),
+        main_bot(),
         app.run_task(host="0.0.0.0", port=10000)
     )
 
+# Detecta si ya hay un event loop en ejecución
+def run():
+    try:
+        # Intenta obtener el loop ya en ejecución (por ejemplo, en Replit)
+        loop = asyncio.get_running_loop()
+        loop.create_task(run_all())
+    except RuntimeError:
+        # Si no hay loop en ejecución, crea uno nuevo
+        asyncio.run(run_all())
+
 if __name__ == '__main__':
-    asyncio.run(run_all())
+    run()
