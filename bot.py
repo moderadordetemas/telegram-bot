@@ -28,7 +28,7 @@ async def start(update: Update, context: CallbackContext):
 
 # Función principal del bot
 async def main():
-    application = Application.builder().token("YOUR_TELEGRAM_BOT_TOKEN").build()
+    application = Application.builder().token("7859944290:AAGq_vFC3JpdINiRZjnRKlYsx2T9n9Wk-uQ").build()
     application.add_handler(CommandHandler("start", start))
     logger.info("✅ Bot iniciado correctamente.")
     # Ejecuta el polling sin cerrar el event loop (close_loop=False)
