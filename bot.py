@@ -43,8 +43,8 @@ app = Quart(__name__)
 async def home():
     return "¡Bot activo y en funcionamiento!"
 
-def run():
-    app.run(host="0.0.0.0", port=8080)
+async def run():
+    await app.run_task(host="0.0.0.0", port=8080)
 
-# Iniciar el servidor Quart en un hilo separado
-Thread(target=run).start()
+# Ejecutar Quart en el mismo loop de asyncio
+loop.create_task(run())
