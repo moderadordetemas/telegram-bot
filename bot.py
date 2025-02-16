@@ -2,9 +2,9 @@ import logging
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
 import asyncio
-from flask import Flask
+from quart import Quart
 
-# Configuración de logging para ver los mensajes del bot
+# Configuración de logging
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -24,16 +24,22 @@ async def main():
     # Iniciar el polling
     await application.run_polling()
 
-# Flask app
-app = Flask(__name__)
+# Quart app (asíncrona, similar a Flask)
+app = Quart(__name__)
 
-# Route para mostrar algo en la página
+# Ruta de ejemplo
 @app.route('/')
-def index():
+async def index():
     return "Bot está corriendo"
 
+# Función para iniciar el servidor y el bot
+async def run_server_and_bot():
+    # Ejecutar el bot en paralelo con el servidor Quart
+    await asyncio.gather(
+        main(),
+        app.run_task(host="0.0.0.0", port=10000)  # Quart ejecutándose en paralelo
+    )
+
+# Ejecutar todo
 if __name__ == "__main__":
-    # Iniciar Flask y el bot en el hilo principal
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())  # Ejecutar el bot
-    app.run(host="0.0.0.0", port=10000)  # Ejecutar Flask
+    asyncio.run(run_server_and_bot())  # Ejecutar el servidor y el bot juntos
