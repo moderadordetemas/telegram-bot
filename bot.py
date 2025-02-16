@@ -4,6 +4,7 @@ from quart import Quart
 from telegram.ext import Application, CommandHandler
 from telegram import Update
 from telegram.ext import CallbackContext
+from threading import Thread
 
 # Inicialización de la aplicación Quart
 app = Quart(__name__)
@@ -32,19 +33,15 @@ async def main():
     await application.run_polling()
 
 # Funcion para iniciar el servidor de Quart y el bot
-async def run():
-    loop = asyncio.get_event_loop()
+def run_bot():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(main())
 
-    # Iniciar el bot
-    await asyncio.gather(
-        main(),  # Iniciar el bot
-        app.run(host="0.0.0.0", port=3000)  # Iniciar el servidor Quart
-    )
+# Iniciar el bot en un hilo separado
+bot_thread = Thread(target=run_bot)
+bot_thread.start()
 
-# Para evitar el error de event loop en Replit
-loop = asyncio.new_event_loop()
-asyncio.set_event_loop(loop)
-
-# Iniciar el proceso
+# Iniciar el servidor Quart
 if __name__ == '__main__':
-    loop.run_until_complete(run())
+    app.run(host="0.0.0.0", port=3000)
