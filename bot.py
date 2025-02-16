@@ -1,5 +1,6 @@
 import logging
 import asyncio
+import threading
 from quart import Quart
 from telegram.ext import Application, CommandHandler
 from telegram import Update
@@ -25,8 +26,8 @@ async def start(update: Update, context: CallbackContext):
 async def index():
     return 'Servidor en ejecución'
 
-# Función principal para iniciar el bot
-async def start_bot():
+# Función para iniciar el bot
+def start_bot():
     application = Application.builder().token(TOKEN).build()
 
     # Agregar comando /start
@@ -34,16 +35,19 @@ async def start_bot():
     application.add_handler(start_handler)
 
     # Ejecutar el bot (utilizando el 'run_polling' para escuchar mensajes)
-    await application.run_polling()
+    application.run_polling()
 
-# Crear una función para iniciar tanto el servidor Quart como el bot
+# Función principal para iniciar el servidor Quart y el bot en paralelo
 async def run():
-    # Crear las tareas para ejecutar el bot y el servidor Quart en paralelo
-    bot_task = asyncio.create_task(start_bot())
+    # Crear tarea para el servidor web
     web_task = asyncio.create_task(app.run_task(host="0.0.0.0", port=3000))
 
-    # Esperar a que ambas tareas se completen (aunque no lo harán en este caso)
-    await asyncio.gather(bot_task, web_task)
+    # Iniciar el bot en un hilo separado
+    bot_thread = threading.Thread(target=start_bot)
+    bot_thread.start()
+
+    # Esperar a que el servidor web esté activo (esta tarea nunca termina)
+    await web_task
 
 # Iniciar todo
 if __name__ == '__main__':
