@@ -1,8 +1,12 @@
 import logging
 import asyncio
+import nest_asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
 from quart import Quart
+
+# Aplica nest_asyncio para permitir que se use asyncio.run() en un entorno con event loop activo.
+nest_asyncio.apply()
 
 # Configuración de logging
 logging.basicConfig(
@@ -11,7 +15,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Configurar la app de Quart (similar a Flask, pero asíncrona)
+# Configura la aplicación Quart (similar a Flask, pero asíncrona)
 app = Quart(__name__)
 
 @app.route('/')
@@ -24,18 +28,18 @@ async def start(update: Update, context: CallbackContext):
 
 # Función principal del bot
 async def main():
-    application = Application.builder().token("7859944290:AAGq_vFC3JpdINiRZjnRKlYsx2T9n9Wk-uQ").build()
+    application = Application.builder().token("YOUR_TELEGRAM_BOT_TOKEN").build()
     application.add_handler(CommandHandler("start", start))
-    logger.info("Bot iniciado correctamente.")
-    # Configura run_polling para que no cierre el event loop (close_loop=False)
+    logger.info("✅ Bot iniciado correctamente.")
+    # Ejecuta el polling sin cerrar el event loop (close_loop=False)
     await application.run_polling(close_loop=False)
 
-# Función que ejecuta tanto el bot como el servidor web de Quart en paralelo
+# Ejecuta el bot y el servidor web de Quart en paralelo
 async def run_all():
     await asyncio.gather(
         main(),
         app.run_task(host="0.0.0.0", port=10000)
     )
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     asyncio.run(run_all())
