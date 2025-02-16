@@ -20,6 +20,11 @@ TOKEN = '7859944290:AAGq_vFC3JpdINiRZjnRKlYsx2T9n9Wk-uQ'
 async def start(update: Update, context: CallbackContext):
     await update.message.reply("¡Hola! Soy tu bot.")
 
+# Ruta para la raíz
+@app.route('/')
+async def index():
+    return 'Servidor en ejecución'
+
 # Función principal para iniciar el bot
 async def main():
     application = Application.builder().token(TOKEN).build()
