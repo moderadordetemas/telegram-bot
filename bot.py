@@ -3,7 +3,6 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
 import asyncio
 from flask import Flask
-from threading import Thread
 
 # Configuración de logging para ver los mensajes del bot
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -28,20 +27,13 @@ async def main():
 # Flask app
 app = Flask(__name__)
 
-# Correr el bot en su hilo separado
-def run_bot():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(main())
-
-# Correr Flask en su hilo separado
-def run_flask():
-    app.run(host="0.0.0.0", port=10000)
+# Route para mostrar algo en la página
+@app.route('/')
+def index():
+    return "Bot está corriendo"
 
 if __name__ == "__main__":
-    # Hilos separados para Flask y el bot
-    thread_flask = Thread(target=run_flask)
-    thread_flask.start()
-    
-    thread_bot = Thread(target=run_bot)
-    thread_bot.start()
+    # Iniciar Flask y el bot en el hilo principal
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())  # Ejecutar el bot
+    app.run(host="0.0.0.0", port=10000)  # Ejecutar Flask
