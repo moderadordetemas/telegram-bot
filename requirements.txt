@@ -1,5 +1,2 @@
-flask
 python-telegram-bot
-gunicorn
-gevent
 quart
