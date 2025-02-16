@@ -12,7 +12,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Token del bot (asegúrate de mantenerlo seguro en variables de entorno)
-TOKEN = "TU_TOKEN_AQUI"
+TOKEN = "7859944290:AAGq_vFC3JpdINiRZjnRKlYsx2T9n9Wk-uQ"
 
 # Función de inicio
 async def start(update: Update, context: CallbackContext) -> None:
