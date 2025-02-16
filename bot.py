@@ -33,7 +33,11 @@ async def main():
     await application.run_polling()
 
 # Iniciar el bot en el loop de eventos
-loop = asyncio.get_event_loop()
+try:
+    loop = asyncio.get_running_loop()
+except RuntimeError:
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
 loop.create_task(main())
 
 # ---- Servidor Quart para mantener Replit activo ----
