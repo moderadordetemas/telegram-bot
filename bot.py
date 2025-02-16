@@ -4,7 +4,6 @@ from quart import Quart
 from telegram.ext import Application, CommandHandler
 from telegram import Update
 from telegram.ext import CallbackContext
-from threading import Thread
 
 # Inicialización de la aplicación Quart
 app = Quart(__name__)
@@ -32,16 +31,17 @@ async def main():
     # Ejecutar el bot (utilizando el 'run_polling' para escuchar mensajes)
     await application.run_polling()
 
-# Funcion para iniciar el servidor de Quart y el bot
-def run_bot():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(main())
+# Crear una función para iniciar tanto el servidor Quart como el bot
+async def run():
+    # Iniciar el bot
+    bot_task = asyncio.create_task(main())
+    
+    # Iniciar el servidor Quart
+    await app.run_task(host="0.0.0.0", port=3000)
 
-# Iniciar el bot en un hilo separado
-bot_thread = Thread(target=run_bot)
-bot_thread.start()
+    # Esperar a que el bot termine su ejecución (aunque no lo hará)
+    await bot_task
 
-# Iniciar el servidor Quart
+# Iniciar todo
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=3000)
+    asyncio.run(run())
