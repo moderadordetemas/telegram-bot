@@ -1,6 +1,8 @@
-import logging
 import asyncio
-import threading
+import nest_asyncio
+nest_asyncio.apply()  # Permite "anidar" llamadas al event loop
+
+import logging
 from quart import Quart
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
@@ -12,37 +14,40 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Token de tu bot (reemplaza con tu token real)
-TOKEN = "7859944290:AAGq_vFC3JpdINiRZjnRKlYsx2T9n9Wk-uQ"
-
-# Configurar la aplicación Quart
+# Inicializa la aplicación Quart
 app = Quart(__name__)
 
-@app.route("/")
+@app.route('/')
 async def index():
     return "Bot is running"
 
-# Comando /start para el bot
+# Función para manejar el comando /start en Telegram
 async def start(update: Update, context: CallbackContext):
-    await update.message.reply_text("¡Hola! Soy tu bot.")
+    await update.message.reply_text("¡Hola! Soy tu bot de prueba.")
 
-# Función asíncrona para iniciar el bot en el hilo principal
+# Función asíncrona para iniciar el bot de Telegram
 async def main_bot():
-    application = Application.builder().token(TOKEN).build()
+    application = Application.builder().token("7859944290:AAGq_vFC3JpdINiRZjnRKlYsx2T9n9Wk-uQ").build()
     application.add_handler(CommandHandler("start", start))
     logger.info("✅ Bot iniciado correctamente.")
-    # Ejecuta el polling en el hilo principal sin cerrar el event loop.
+    # Ejecuta el polling sin cerrar el event loop al finalizar
     await application.run_polling(close_loop=False)
 
-# Función para iniciar el servidor Quart (bloqueante) en un hilo separado
-def run_quart():
-    # Nota: app.run() usa el servidor de desarrollo, ideal para pruebas en Replit.
-    app.run(host="0.0.0.0", port=3000)
+# Función principal que ejecuta tanto el bot como el servidor web de Quart en paralelo
+async def main():
+    await asyncio.gather(
+        main_bot(),
+        app.run_task(host="0.0.0.0", port=3000)
+    )
 
-if __name__ == "__main__":
-    # Iniciar el servidor Quart en un hilo separado (para mantener el entorno activo)
-    quart_thread = threading.Thread(target=run_quart, daemon=True)
-    quart_thread.start()
-
-    # Ejecutar el bot en el hilo principal (así se permiten los manejadores de señales)
-    asyncio.run(main_bot())
+# Ejecutar todo en el hilo principal
+if __name__ == '__main__':
+    try:
+        # Intenta obtener el event loop que ya esté corriendo
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        # Si no hay, crea uno nuevo
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    loop.create_task(main())
+    loop.run_forever()
