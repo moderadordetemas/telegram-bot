@@ -28,6 +28,10 @@ async def index():
 
 # Función para iniciar el bot
 def start_bot():
+    # Crear un bucle de eventos en este hilo
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
     application = Application.builder().token(TOKEN).build()
 
     # Agregar comando /start
@@ -35,7 +39,7 @@ def start_bot():
     application.add_handler(start_handler)
 
     # Ejecutar el bot (utilizando el 'run_polling' para escuchar mensajes)
-    application.run_polling()
+    loop.run_until_complete(application.run_polling())
 
 # Función principal para iniciar el servidor Quart y el bot en paralelo
 async def run():
