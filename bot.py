@@ -1,55 +1,50 @@
-print("Iniciando bot...")
 import logging
 import asyncio
-from threading import Thread
 from quart import Quart
+from telegram.ext import Application, CommandHandler
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
+from telegram.ext import CallbackContext
 
-# Configurar logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-logger = logging.getLogger(__name__)
-
-# Token del bot (asegúrate de mantenerlo seguro en variables de entorno)
-TOKEN = "7859944290:AAGq_vFC3JpdINiRZjnRKlYsx2T9n9Wk-uQ"
-
-# Función de inicio
-async def start(update: Update, context: CallbackContext) -> None:
-    await update.message.reply_text("¡Hola! Soy tu bot de Telegram.")
-
-# Función de manejo de mensajes
-async def echo(update: Update, context: CallbackContext) -> None:
-    await update.message.reply_text(update.message.text)
-
-# Configuración de la aplicación de Telegram
-application = Application.builder().token(TOKEN).build()
-application.add_handler(CommandHandler("start", start))
-application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
-
-# Función principal del bot
-async def main():
-    logger.info("Bot iniciado correctamente.")
-    await application.run_polling()
-
-# Iniciar el bot en el loop de eventos
-try:
-    loop = asyncio.get_running_loop()
-except RuntimeError:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-loop.create_task(main())
-
-# ---- Servidor Quart para mantener Replit activo ----
+# Inicialización de la aplicación Quart
 app = Quart(__name__)
 
-@app.route('/')
-async def home():
-    return "¡Bot activo y en funcionamiento!"
+# Configuración de logs
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+logger = logging.getLogger(__name__)
 
+# Token de tu bot de Telegram
+TOKEN = '7859944290:AAGq_vFC3JpdINiRZjnRKlYsx2T9n9Wk-uQ'
+
+# Comando /start
+async def start(update: Update, context: CallbackContext):
+    await update.message.reply("¡Hola! Soy tu bot.")
+
+# Función principal para iniciar el bot
+async def main():
+    application = Application.builder().token(TOKEN).build()
+
+    # Agregar comando /start
+    start_handler = CommandHandler('start', start)
+    application.add_handler(start_handler)
+
+    # Ejecutar el bot (utilizando el 'run_polling' para escuchar mensajes)
+    await application.run_polling()
+
+# Funcion para iniciar el servidor de Quart y el bot
 async def run():
-    await app.run_task(host="0.0.0.0", port=8080)
+    loop = asyncio.get_event_loop()
 
-# Ejecutar Quart en el mismo loop de asyncio
-loop.create_task(run())
+    # Iniciar el bot
+    await asyncio.gather(
+        main(),  # Iniciar el bot
+        app.run(host="0.0.0.0", port=3000)  # Iniciar el servidor Quart
+    )
+
+# Para evitar el error de event loop en Replit
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+
+# Iniciar el proceso
+if __name__ == '__main__':
+    loop.run_until_complete(run())
