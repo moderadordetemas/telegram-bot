@@ -1,3 +1,4 @@
+print("Iniciando bot...")
 import logging
 import asyncio
 from threading import Thread
