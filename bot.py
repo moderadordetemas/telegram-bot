@@ -1,58 +1,55 @@
 import logging
 import asyncio
-import threading
-from quart import Quart
-from telegram.ext import Application, CommandHandler
+import nest_asyncio
 from telegram import Update
-from telegram.ext import CallbackContext
+from telegram.ext import Application, CommandHandler, CallbackContext
+from quart import Quart
 
-# Inicialización de la aplicación Quart
-app = Quart(__name__)
+# Aplica nest_asyncio para permitir que se "aniden" llamadas al event loop
+nest_asyncio.apply()
 
-# Configuración de logs
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
+# Configuración de logging
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
+)
 logger = logging.getLogger(__name__)
 
-# Token de tu bot de Telegram
-TOKEN = '7859944290:AAGq_vFC3JpdINiRZjnRKlYsx2T9n9Wk-uQ'
+# Configura la app de Quart (similar a Flask, pero asíncrona)
+app = Quart(__name__)
 
-# Comando /start
-async def start(update: Update, context: CallbackContext):
-    await update.message.reply("¡Hola! Soy tu bot.")
-
-# Ruta para la raíz
 @app.route('/')
 async def index():
-    return 'Servidor en ejecución'
+    return "Bot is running"
 
-# Función para iniciar el bot
-def start_bot():
-    # Crear un bucle de eventos en este hilo
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    
-    application = Application.builder().token(TOKEN).build()
+# Función para manejar el comando /start
+async def start(update: Update, context: CallbackContext):
+    await update.message.reply_text("¡Hola! Soy tu bot de prueba.")
 
-    # Agregar comando /start
-    start_handler = CommandHandler('start', start)
-    application.add_handler(start_handler)
+# Función que configura y ejecuta el bot de Telegram
+async def main_bot():
+    application = Application.builder().token("YOUR_TELEGRAM_BOT_TOKEN").build()
+    application.add_handler(CommandHandler("start", start))
+    logger.info("✅ Bot iniciado correctamente.")
+    # Ejecuta el polling sin cerrar el event loop (close_loop=False)
+    await application.run_polling(close_loop=False)
 
-    # Ejecutar el bot (utilizando el 'run_polling' para escuchar mensajes)
-    loop.run_until_complete(application.run_polling())
+# Función que ejecuta en paralelo el bot y el servidor web de Quart
+async def run_all():
+    await asyncio.gather(
+        main_bot(),
+        app.run_task(host="0.0.0.0", port=10000)
+    )
 
-# Función principal para iniciar el servidor Quart y el bot en paralelo
-async def run():
-    # Crear tarea para el servidor web
-    web_task = asyncio.create_task(app.run_task(host="0.0.0.0", port=3000))
+# Detecta si ya hay un event loop en ejecución
+def run():
+    try:
+        # Intenta obtener el loop ya en ejecución (por ejemplo, en Replit)
+        loop = asyncio.get_running_loop()
+        loop.create_task(run_all())
+    except RuntimeError:
+        # Si no hay loop en ejecución, crea uno nuevo
+        asyncio.run(run_all())
 
-    # Iniciar el bot en un hilo separado
-    bot_thread = threading.Thread(target=start_bot)
-    bot_thread.start()
-
-    # Esperar a que el servidor web esté activo (esta tarea nunca terminara)
-    await web_task
-
-# Iniciar todo
 if __name__ == '__main__':
-    asyncio.run(run())
+    run()
