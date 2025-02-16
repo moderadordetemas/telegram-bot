@@ -50,7 +50,7 @@ async def run():
     bot_thread = threading.Thread(target=start_bot)
     bot_thread.start()
 
-    # Esperar a que el servidor web esté activo (esta tarea nunca termina)
+    # Esperar a que el servidor web esté activo (esta tarea nunca terminara)
     await web_task
 
 # Iniciar todo
